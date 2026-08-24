@@ -67,3 +67,14 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# CMS-internal inputs and generated analysis products
+data/
+private/
+payloads/private/
+results/
+plots/
+*.root
+*.pcm
+*_ACLiC_*
+CodexPrompts.rtf
