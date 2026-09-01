@@ -12,7 +12,11 @@ studies.  The intended final scope is ud, s, g, c, and b response from 15 GeV to
   independent fit for 2024, 2025, and 2026.
 - `DijetReco.C` reads the primitive `GluonJets/tight` profiles from the sibling
   `jecsys3` checkout and makes reco-level tag-pair balance, fraction, and
-  gq-minus-qg contrast plots.  Dijet is not yet included in the flavor fit.
+  gq-minus-qg contrast plots for the older schema.
+- `DijetFlavorMatrix.C` analyzes the v173 `GluonJets/FlavorMatrix` profiles. It
+  validates the trigger merge and 3D-to-2D closure, recovers weighted counts
+  from the profile bin entries, infers data tagging efficiencies and purities,
+  and fits the dijet-only g/c/b response relative to uds.
 - `tdrstyle_mod22.C` supplies the CMS plot style.
 
 The fit is a diagnostic, not a JEC payload.  It uses nominal MC response shares,
@@ -32,11 +36,16 @@ root -l -b -q 'JetFlavor.C(2026,false,0.2)'
 root -l -b -q 'DijetReco.C(2024)'
 root -l -b -q 'DijetReco.C(2025)'
 root -l -b -q 'DijetReco.C(2026)'
+
+root -l -b -q 'DijetFlavorMatrix.C+()'
 ```
 
 `JetFlavor.C` expects private inputs named
 `data/jecdata{2024,2025,2026}FLAVOR.root`.  `DijetReco.C` defaults to
 `../jecsys3`; pass a second argument if that checkout is elsewhere.
+`DijetFlavorMatrix.C` defaults to the v173/v173_v2 data and MC files under
+`data/` and writes its tables to `results/dijetFlavorMatrix/` and figures to
+`plots/dijetFlavorMatrix/`.
 
 Generated `plots/`, `results/`, ROOT inputs, and private payloads are gitignored.
 The ROOT outputs contain fit covariance, input rows/points, and provenance; the
@@ -44,3 +53,5 @@ text and CSV outputs provide human-readable summaries.
 
 See [docs/proof-of-principle.md](docs/proof-of-principle.md) for the model,
 results, provenance audit, limitations, and next implementation gates.
+The v173 dijet extraction and its validation are documented separately in
+[docs/dijet-flavor-matrix-v173.md](docs/dijet-flavor-matrix-v173.md).

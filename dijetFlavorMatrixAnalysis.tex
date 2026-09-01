@@ -1,0 +1,294 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{array}
+
+\definecolor{cmsblue}{RGB}{0,92,170}
+\definecolor{cmsred}{RGB}{220,35,55}
+\definecolor{cmsgreen}{RGB}{0,145,85}
+\definecolor{cmsamber}{RGB}{185,110,0}
+\setbeamercolor{structure}{fg=cmsblue}
+\setbeamercolor{frametitle}{fg=black}
+\setbeamercolor{title}{fg=black}
+\setbeamercolor{alerted text}{fg=cmsred}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\color{cmsblue}$\blacktriangleright$}
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.82\paperwidth,ht=2.6ex,dp=1.1ex,leftskip=1.0em]{author in head/foot}%
+      \color{gray}\scriptsize CMS Work in progress
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.18\paperwidth,ht=2.6ex,dp=1.1ex,rightskip=1.0em plus1fil]{date in head/foot}%
+      \color{gray}\scriptsize\insertframenumber/\inserttotalframenumber
+    \end{beamercolorbox}}%
+  \vskip0pt}
+\setbeamertemplate{headline}{%
+  \color{cmsblue}\rule{\paperwidth}{1.2pt}}
+\setbeamersize{text margin left=0.55cm,text margin right=0.55cm}
+\graphicspath{{plots/dijetFlavorMatrix/}}
+
+\newcommand{\plotbox}[2][0.93\textheight]{%
+  \centering\includegraphics[height=#1,keepaspectratio]{#2}}
+\newcommand{\cmark}{\textcolor{cmsgreen}{\textbf{+}}}
+\newcommand{\xmark}{\textcolor{cmsred}{\textbf{-}}}
+
+\title{Four-flavor tagging and relative response from dijets}
+\subtitle{v173 pair matrices, trigger-merge closure, and a barrel AK4 PUPPI proof of principle}
+\author{M. Voutilainen}
+\date{Run 2026 B--D data and Summer24 multijet simulation}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+  \vfill
+  \begin{center}
+    \color{cmsamber}\small Conditional inference only; not yet a calibrated tagger SF or flavor-JEC payload
+  \end{center}
+\end{frame}
+
+\begin{frame}{The v173 matrices contain both orientations and all four tags}
+\begin{columns}[T,onlytextwidth]
+\column{0.48\textwidth}
+\begin{block}{Sequential reconstructed tag}
+\begin{align*}
+b &: \mathrm{UParT\ AK4B}>0.4648,\\
+c &: \neg b,\quad \mathrm{UParT\ CvL}>0.650,\\
+uds &: \neg b,\neg c,\quad \mathrm{PNet\ QvG}\geq0.45,\\
+g &: \neg b,\neg c,\quad 0\leq\mathrm{PNet\ QvG}<0.45.
+\end{align*}
+\end{block}
+\column{0.50\textwidth}
+\begin{itemize}
+\item Truth $u/d/s$ is combined into $uds$; undefined/unmatched is merged with $g$.
+\item Both leading jets act as tag and probe, with both jets satisfying $|\eta|<1.3$.
+\item The producer implements \texttt{pair = 10*tag + probe}; this is opposite to the supplied prose convention.
+\item The auxiliary q/g-efficiency block reverses the QvG labels; the matrix itself follows the definition above.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{The combined files pass exact bin-level closure}
+\begin{columns}[T,onlytextwidth]
+\column{0.55\textwidth}
+\small
+\begin{tabular}{lrr}
+\toprule
+Check & Tested & Failures\\
+\midrule
+Data pT slices vs source HLT & 488 & 0\\
+MC 2D/3D slices vs \texttt{HLT\_MC} & 1024 & 0\\
+3D truth profile $\rightarrow$ 2D profile & 16 variants & 0\\
+\bottomrule
+\end{tabular}
+\vspace{0.8em}
+\begin{block}{Observed trigger routing}
+\begin{itemize}
+\item \texttt{ab/ad}: ZeroBias, then DiPFJetAve40--500
+\item \texttt{tc/pf}: ZeroBias, then PFJet40--500
+\item 155--180 GeV \texttt{ab}: Ave80 and PFJet80 are identical
+\end{itemize}
+\end{block}
+\column{0.43\textwidth}
+\begin{alertblock}{Bookkeeping issue}
+Global \texttt{TProfile::GetEntries()} is inflated in the combined files. Bin-local entries, effective entries, and means close exactly and are used here.
+\end{alertblock}
+\smallskip
+\small Largest 3D$\rightarrow$2D differences:
+\begin{align*}
+\Delta N/N &<3.5\times10^{-14},\\
+|\Delta\langle x\rangle| &<3.9\times10^{-14}.
+\end{align*}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Pair-level IPF uses every stored count}
+\begin{columns}[T,onlytextwidth]
+\column{0.53\textwidth}
+\begin{align*}
+W_{\rm data} &= \arg\min_W D_{\rm KL}(W\Vert M),\\
+\sum_F W(R,F) &= d_{\rm data}(R),\\
+\sum_R W(R,F) &= \pi_{\rm MC}(F).
+\end{align*}
+\column{0.45\textwidth}
+\begin{itemize}
+\item $R$: 16 reconstructed tag/probe pairs
+\item $F$: 16 true-flavor tag/probe pairs
+\item counts recovered from profile bin entries
+\item fixed MC truth fractions, as requested
+\item marginal error below $10^{-10}$ in every pT range
+\end{itemize}
+\end{columns}
+\vspace{0.4em}
+\begin{block}{Requested single-jet outputs}
+After the pair fit, tag and probe orientations are marginalized to obtain $\epsilon(t\mid f)$ and $P(f\mid t)$. Pair correlations are retained during inference.
+\end{block}
+\end{frame}
+
+\begin{frame}{Efficiencies require large conditional data/MC shifts}
+\begin{columns}[c,onlytextwidth]
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{efficiency_mc.png}
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{efficiency_data_inferred.png}
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{efficiency_ratio_data_over_mc.png}
+\end{columns}
+\vspace{0.5em}
+\centering\scriptsize Integrated over 60--2000 GeV. Inferred data values assume perfectly modeled truth fractions and minimum-KL tagging changes.
+\end{frame}
+
+\begin{frame}{Purity changes are the response-mixture correction}
+\begin{columns}[c,onlytextwidth]
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{purity_mc.png}
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{purity_data_inferred.png}
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{purity_ratio_data_over_mc.png}
+\end{columns}
+\vspace{0.5em}
+\centering\scriptsize Diagonal purity ratios: $uds=0.860$, $g=1.038$, $c=0.895$, $b=0.773$.
+\end{frame}
+
+\begin{frame}{Single-jet pT binning changes the inferred flavor balance}
+\begin{columns}[c,onlytextwidth]
+\column{0.64\textwidth}
+\includegraphics[width=\linewidth]{axis_binning_comparison.png}
+\centering\scriptsize Efficiency SF (left); purity ratio (right), 60--2000 GeV
+\column{0.34\textwidth}
+\small
+\begin{itemize}
+\item \texttt{ab} and \texttt{ad} agree at the per-mille level.
+\item \texttt{tc/pf} shifts diagonal efficiency SFs by $+2.3\%$ (uds), $-3.2\%$ (g), $+0.3\%$ (c), and $+1.0\%$ (b) relative to \texttt{ab}.
+\item \texttt{tc} and \texttt{pf} are identical after the two orientations are marginalized.
+\end{itemize}
+\begin{alertblock}{Interpretation}
+The observed change is consistent with pT migration and steep-spectrum effects; it is a method systematic, not a new central fit.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Dijets determine response differences, not an absolute scale}
+\begin{columns}[T,onlytextwidth]
+\column{0.54\textwidth}
+\begin{align*}
+R_{\rm HDM} &= \frac{m_0-m_n-m_u}
+ {1-m_n/R_n-m_u/R_u},\\
+q(R_{\rm HDM}) &= \frac{R_{\rm HDM}+1}{3-R_{\rm HDM}},\\
+q_{\rm data}(R,F) &= q_{\rm MC}(R,F)
+\frac{k_{f_{\rm probe}}}{k_{f_{\rm tag}}}.
+\end{align*}
+\column{0.44\textwidth}
+\begin{block}{Fit choices}
+\begin{itemize}
+\item $R_n=1.00$, $R_u=0.92$
+\item merged $m_0,m_n,m_u$ component means
+\item all MC reco/true response cells retained
+\item one $k_f$ per true flavor across reco cells
+\item $k_{uds}=1$ fixes the unobservable common mode
+\item nonlinear least squares, both orientations
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{MC cell dependence is retained in the data estimate}
+\begin{columns}[c,onlytextwidth]
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{truth_pair_response_mc.png}
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{truth_pair_response_data_inferred.png}
+\column{0.33\textwidth}\includegraphics[width=\linewidth]{truth_pair_response_ratio_data_over_mc.png}
+\end{columns}
+\vspace{0.5em}
+\centering\scriptsize 350--500 GeV. Each truth-pair value averages the reco-cell-specific MC templates with the inferred data transition weights.
+\end{frame}
+
+\begin{frame}{Dijet response reaches 1.8 TeV in the first fit}
+\begin{columns}[c,onlytextwidth]
+\column{0.68\textwidth}
+\includegraphics[width=\linewidth]{response_vs_pt_ab.png}
+\column{0.30\textwidth}
+\small
+\begin{itemize}
+\item $g/uds$: 0.969 near 100 GeV, rising to 0.990 near 1.3 TeV
+\item $c/uds$ and $b/uds$ approach unity at high pT
+\item full rank in every displayed bin
+\item response rows become insufficient above 1.8 TeV
+\end{itemize}
+\end{columns}
+\vspace{-0.4em}
+\centering\scriptsize Error bars are conditional profile statistics only; no tag, truth-fraction, template, or model systematics are included.
+\end{frame}
+
+\begin{frame}{Tagging trends remain strongly model dependent}
+\begin{columns}[c,onlytextwidth]
+\column{0.50\textwidth}
+\includegraphics[width=\linewidth]{efficiency_diagonal_ratio_vs_pt.png}
+\column{0.50\textwidth}
+\includegraphics[width=\linewidth]{purity_diagonal_ratio_vs_pt.png}
+\end{columns}
+\vspace{-0.25em}
+\centering\scriptsize The fixed-truth-fraction IPF attributes every reco-fraction difference to tagging. These curves are diagnostics until constrained by official SF/mistag inputs.
+\end{frame}
+
+\begin{frame}{Representative response bins have acceptable conditional closure}
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+$p_T$ (GeV) & $g/uds$ & $c/uds$ & $b/uds$ & $\chi^2$/ndf\\
+\midrule
+85--125 & $0.9685\pm0.0020$ & $0.9801\pm0.0035$ & $0.9808\pm0.0034$ & 14.8/13\\
+250--350 & $0.97785\pm0.00045$ & $0.98395\pm0.00086$ & $0.98500\pm0.00088$ & 7.7/13\\
+500--600 & $0.98043\pm0.00039$ & $0.98487\pm0.00087$ & $0.98573\pm0.00087$ & 8.5/13\\
+800--1000 & $0.98375\pm0.00045$ & $0.99648\pm0.00120$ & $0.99085\pm0.00113$ & 12.2/13\\
+1200--1500 & $0.9903\pm0.0014$ & $1.0082\pm0.0035$ & $0.9975\pm0.0034$ & 7.8/13\\
+1500--1800 & $0.9879\pm0.0032$ & $1.0211\pm0.0074$ & $0.9952\pm0.0067$ & 2.7/9\\
+\bottomrule
+\end{tabular}
+\vspace{0.8em}
+\begin{alertblock}{Precision statement}
+These errors include a 0.02\% per-row numerical/statistical floor. They can be below 0.1\%, but the total uncertainty cannot be claimed until tagging, truth fractions, component covariance, response templates, FSR/ISR, and trigger/JEC effects are propagated.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{The producer should store explicit populations and provenance}
+\begin{columns}[T,onlytextwidth]
+\column{0.49\textwidth}
+\begin{block}{Output improvements}
+\begin{itemize}
+\item TH2D/TH3D sumw, sumw2, and raw counts
+\item committed FlavorMatrix trigger-combine logic
+\item producer/combine commit hashes in ROOT metadata
+\item tagger model, working point, and SF payload identity
+\item corrected auxiliary q/g label convention
+\end{itemize}
+\end{block}
+\column{0.49\textwidth}
+\begin{block}{Analysis improvements}
+\begin{itemize}
+\item event bootstrap across orientations and pT axes
+\item constrained truth fractions and official tag/mistag nuisances
+\item MC-as-data and injected-shift closure
+\item generator, FSR/ISR, unmatched, JEC/JER systematics
+\item component and MC-template covariance
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Recommended next step: add dijet as a relative-response constraint}
+\begin{enumerate}
+\item Keep \texttt{ab} as the central dijet response coordinate; use \texttt{ad/tc/pf} for migration and method systematics.
+\item Add calibrated tag/mistag priors and float truth fractions before interpreting the IPF efficiency shifts as SFs.
+\item Build one likelihood with Z+jet/$\gamma$+jet absolute reference information and dijet high-pT relative-response information.
+\item Preserve independent 2024/2025/2026 detector fits under common smooth extrapolation forms.
+\item Add ud/s separation only when W$\to cs$ inputs are available; keep the present $uds$ result as the four-flavor baseline.
+\end{enumerate}
+\vfill
+\begin{center}
+\color{cmsgreen}\textbf{The v173 matrices provide a working four-flavor dijet constraint with exact file closure and useful response reach to 1.8 TeV.}
+\end{center}
+\end{frame}
+
+\end{document}
